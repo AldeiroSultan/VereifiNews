@@ -5,6 +5,7 @@ import ResultPanel from './components/ResultPanel';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import LoadingOverlay from './components/LoadingOverlay';
+import BoxPreloader from './components/BoxPreLoader'; // Import the preloader component
 import { processArticleClientSide } from './utils/clientSummarizer';
 import axios from 'axios';
 
@@ -22,6 +23,9 @@ function App() {
       return;
     }
 
+    // Wait for button animation to complete before showing loading overlay
+    // This delay happens inside the AnimatedButton component
+    
     setLoading(true);
     setError(null);
 
@@ -114,47 +118,51 @@ function App() {
   };
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      minHeight: '100vh',
-      bgcolor: theme.palette.background.default
-    }}>
-      <Header />
-      
-      <Container maxWidth="lg" sx={{ flex: 1, py: 4 }}>
-        {error && (
-          <Box sx={{ 
-            p: 2, 
-            mb: 3, 
-            bgcolor: '#fee2e2', 
-            color: '#b91c1c',
-            borderRadius: 2
-          }}>
-            <Typography variant="body1">{error}</Typography>
-          </Box>
-        )}
+    <BoxPreloader minDisplayTime={2500}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minHeight: '100vh',
+        bgcolor: theme.palette.background.default
+      }}>
+        <Header />
         
-        <InputPanel 
-          onSubmit={handleSubmit} 
-          activeModel={activeModel}
-          onModelChange={handleModelChange}
-        />
-        
-        {result && !loading && (
-          <ResultPanel 
-            summary={result.summary} 
-            credibilityScore={result.credibilityScore} 
-            credibilityFactors={result.credibilityFactors}
-            articleText={articleText}
+        <Container maxWidth="lg" sx={{ flex: 1, py: 4 }}>
+          {error && (
+            <Box sx={{ 
+              p: 2, 
+              mb: 3, 
+              bgcolor: theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.1)' : '#fee2e2', 
+              color: theme.palette.mode === 'dark' ? '#f87171' : '#b91c1c',
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)',
+            }}>
+              <Typography variant="body1">{error}</Typography>
+            </Box>
+          )}
+          
+          <InputPanel 
+            onSubmit={handleSubmit} 
+            activeModel={activeModel}
+            onModelChange={handleModelChange}
           />
-        )}
-      </Container>
-      
-      <Footer />
-      
-      {loading && <LoadingOverlay />}
-    </Box>
+          
+          {result && !loading && (
+            <ResultPanel 
+              summary={result.summary} 
+              credibilityScore={result.credibilityScore} 
+              credibilityFactors={result.credibilityFactors}
+              articleText={articleText}
+            />
+          )}
+        </Container>
+        
+        <Footer />
+        
+        {loading && <LoadingOverlay />}
+      </Box>
+    </BoxPreloader>
   );
 }
 

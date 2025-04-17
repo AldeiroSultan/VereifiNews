@@ -10,7 +10,8 @@ import {
   Tabs,
   Tab,
   useTheme,
-  Fade
+  Fade,
+  Alert
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -18,6 +19,8 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import ArticleIcon from '@mui/icons-material/Article';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import GppBadIcon from '@mui/icons-material/GppBad';
 
 const ResultPanel = ({ summary, credibilityScore, credibilityFactors, articleText }) => {
   const [tabValue, setTabValue] = useState(0);
@@ -38,6 +41,12 @@ const ResultPanel = ({ summary, credibilityScore, credibilityFactors, articleTex
     scoreColor = '#f59e0b'; // Yellow/Orange
     scoreLabel = 'Medium Credibility';
   }
+  
+  // Determine if the news is likely real or a hoax
+  const isLikelyHoax = credibilityScore < 50;
+  const verdictColor = isLikelyHoax ? '#ef4444' : '#10b981';
+  const verdictLabel = isLikelyHoax ? 'Likely Hoax/Misleading' : 'Likely Reliable';
+  const VerdictIcon = isLikelyHoax ? GppBadIcon : VerifiedIcon;
   
   // Organize factors by type - with safe fallback if credibilityFactors is undefined
   const positiveFactors = credibilityFactors ? credibilityFactors.filter(f => f.type === 'positive') : [];
@@ -99,6 +108,23 @@ const ResultPanel = ({ summary, credibilityScore, credibilityFactors, articleTex
             Summary
           </Typography>
           
+          {/* Added Verdict Banner */}
+          <Box sx={{ mb: 3 }}>
+            <Alert 
+              icon={<VerdictIcon fontSize="inherit" />}
+              severity={isLikelyHoax ? "error" : "success"}
+              sx={{ 
+                borderRadius: 2,
+                fontWeight: 600,
+                border: '1px solid',
+                borderColor: isLikelyHoax ? 'error.light' : 'success.light',
+                animation: 'fadeIn 0.5s ease-in'
+              }}
+            >
+              {verdictLabel} - Credibility Score: {credibilityScore}/100
+            </Alert>
+          </Box>
+          
           <Box 
             sx={{ 
               p: 3, 
@@ -115,7 +141,7 @@ const ResultPanel = ({ summary, credibilityScore, credibilityFactors, articleTex
                 left: 0,
                 width: '5px',
                 height: '100%',
-                backgroundColor: theme.palette.primary.main,
+                backgroundColor: verdictColor, // Use verdict color for accent
                 borderRadius: '4px 0 0 4px'
               }
             }}
@@ -131,6 +157,31 @@ const ResultPanel = ({ summary, credibilityScore, credibilityFactors, articleTex
           <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 600 }}>
             Credibility Analysis
           </Typography>
+          
+          {/* Added Verdict Banner */}
+          <Box sx={{ mb: 4 }}>
+            <Alert 
+              icon={<VerdictIcon fontSize="inherit" />}
+              severity={isLikelyHoax ? "error" : "success"}
+              sx={{ 
+                borderRadius: 2,
+                fontWeight: 600,
+                py: 2,
+                border: '1px solid',
+                borderColor: isLikelyHoax ? 'error.light' : 'success.light',
+                fontSize: '1.1rem'
+              }}
+            >
+              <Typography variant="h6" component="div">
+                {verdictLabel}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {isLikelyHoax 
+                  ? "This article shows characteristics commonly found in misleading content." 
+                  : "This article shows characteristics commonly found in reliable reporting."}
+              </Typography>
+            </Alert>
+          </Box>
           
           <Box sx={{ mb: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -189,6 +240,41 @@ const ResultPanel = ({ summary, credibilityScore, credibilityFactors, articleTex
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                   <Typography variant="body2" color="text.secondary">0</Typography>
                   <Typography variant="body2" color="text.secondary">100</Typography>
+                </Box>
+                
+                {/* Add threshold indicator */}
+                <Box sx={{ 
+                  position: 'relative', 
+                  mt: 1,
+                  height: 24,
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: -10,
+                    left: '50%',
+                    width: 2,
+                    height: 24,
+                    backgroundColor: '#64748b',
+                    borderRadius: 1
+                  }
+                }}>
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary" 
+                    sx={{ 
+                      position: 'absolute',
+                      top: 8,
+                      left: '49%',
+                      transform: 'translateX(-50%)',
+                      backgroundColor: theme.palette.background.paper,
+                      px: 1,
+                      borderRadius: 1,
+                      fontWeight: 500,
+                      fontSize: '0.7rem'
+                    }}
+                  >
+                    Reliability Threshold (50)
+                  </Typography>
                 </Box>
               </Box>
             </Box>

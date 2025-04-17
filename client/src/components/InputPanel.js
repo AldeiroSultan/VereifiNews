@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Paper, 
   Typography, 
@@ -6,21 +6,19 @@ import {
   Tab, 
   Box, 
   TextField, 
-  Button, 
   FormControl,
   Select,
   MenuItem,
   InputLabel,
-  Tooltip,
-  Stack,
   Alert,
+  Stack,
   useTheme
 } from '@mui/material';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import LinkIcon from '@mui/icons-material/Link';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import SendIcon from '@mui/icons-material/Send';
+import StandaloneBlueButton from './StandaloneBlueButton'; // Import the new standalone button
 
 const InputPanel = ({ onSubmit, activeModel, onModelChange }) => {
   const theme = useTheme();
@@ -28,7 +26,7 @@ const InputPanel = ({ onSubmit, activeModel, onModelChange }) => {
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
   const [selectedModel, setSelectedModel] = useState(activeModel);
-  const [isHovered, setIsHovered] = useState(false);
+  const buttonActionRef = useRef(null);
   
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -40,7 +38,7 @@ const InputPanel = ({ onSubmit, activeModel, onModelChange }) => {
     onModelChange(model);
   };
   
-  const handleSubmit = () => {
+  const prepareSubmission = () => {
     let content = '';
     let inputType = 'text';
     
@@ -52,7 +50,16 @@ const InputPanel = ({ onSubmit, activeModel, onModelChange }) => {
       inputType = 'url';
     }
     
-    onSubmit(content, selectedModel, inputType);
+    buttonActionRef.current = () => {
+      onSubmit(content, selectedModel, inputType);
+    };
+  };
+  
+  const handleSubmit = () => {
+    if (buttonActionRef.current) {
+      buttonActionRef.current();
+      buttonActionRef.current = null;
+    }
   };
 
   // Model options
@@ -215,38 +222,23 @@ const InputPanel = ({ onSubmit, activeModel, onModelChange }) => {
         )}
       </Box>
       
+      {/* Use the new standalone button with fixed blue color */}
       <Box sx={{ 
         display: 'flex', 
         justifyContent: 'center',
-        mt: 4
+        alignItems: 'center',
+        mt: 4,
+        mb: 2,
+        minHeight: '60px',
+        position: 'relative',
+        textAlign: 'center'
       }}>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          size="large" 
+        <StandaloneBlueButton 
+          label="Summarize Article"
           onClick={handleSubmit}
           disabled={tabValue === 0 ? !text.trim() : !url.trim()}
-          endIcon={<SendIcon />}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          sx={{ 
-            px: 4,
-            py: 1.5,
-            minWidth: 200,
-            fontWeight: 600,
-            fontSize: '1rem',
-            transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            transform: isHovered ? 'translateY(-3px)' : 'translateY(0)',
-            boxShadow: isHovered ? '0 6px 20px rgba(59, 130, 246, 0.4)' : '0 4px 6px rgba(59, 130, 246, 0.2)',
-            '&:disabled': {
-              opacity: 0.6,
-              boxShadow: 'none',
-              transform: 'translateY(0)'
-            }
-          }}
-        >
-          Summarize Article
-        </Button>
+          onPrepare={prepareSubmission}
+        />
       </Box>
     </Paper>
   );

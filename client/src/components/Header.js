@@ -57,7 +57,7 @@ const Header = () => {
                 letterSpacing: '0.5px'
               }}
             >
-              News Summarizer
+              VerifiNews
             </Typography>
           </Box>
           
